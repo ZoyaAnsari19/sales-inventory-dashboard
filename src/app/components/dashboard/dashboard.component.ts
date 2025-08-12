@@ -156,14 +156,16 @@ export class DashboardComponent implements OnInit {
   }
 
   loadStats() {
-    this.productService.getAllProducts().subscribe(products => {
-      const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
+    // Products data
+    this.productService.getProducts().subscribe((products) => {
+      const totalStock = products.reduce((sum: number, p) => sum + p.stock, 0);
       this.stats[0].value = products.length.toString();
       this.stats[3].value = totalStock.toString();
     });
 
-    this.salesService.getSales().subscribe(sales => {
-      const totalRevenue = sales.reduce((sum, s: Sale) => sum + s.totalAmount, 0); // ✅ Fixed
+    // Sales data
+    this.salesService.getSales().subscribe((sales: Sale[]) => {
+      const totalRevenue = sales.reduce((sum: number, s: Sale) => sum + s.totalAmount, 0);
       this.stats[1].value = sales.length.toString();
       this.stats[2].value = '₹' + totalRevenue.toString();
     });
