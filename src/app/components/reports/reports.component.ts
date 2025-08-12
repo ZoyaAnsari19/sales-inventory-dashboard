@@ -149,13 +149,14 @@ import { Router } from '@angular/router';
 
     .quick-actions {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;;
       gap: 12px;
       margin-top: 12px;
     }
 
     .quick-actions button {
       font-weight: 600;
+      width: 100%;
       padding: 8px 20px;
       border-radius: 8px;
       text-transform: capitalize;
@@ -195,20 +196,31 @@ export class ReportsComponent implements OnInit {
       }))
     );
 
-    this.salesSummary$ = this.salesService.getSales().pipe(
-      map(sales => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todaySales = sales.filter(s => new Date(s.saleDate) >= today);
-        const totalRevenue = sales.reduce((sum, s) => sum + s.totalAmount, 0);
-        return {
-          totalSales: sales.length,
-          totalRevenue,
-          averageSale: sales.length ? totalRevenue / sales.length : 0,
-          todaySales: todaySales.length
-        };
-      })
-    );
+   this.salesSummary$ = this.salesService.getSales().pipe(
+  map(sales => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday se start
+
+    const todaySales = sales.filter(s => new Date(s.saleDate) >= today);
+    const weekSales = sales.filter(s => new Date(s.saleDate) >= startOfWeek);
+
+    const totalRevenue = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const weekRevenue = weekSales.reduce((sum, s) => sum + s.totalAmount, 0);
+
+    return {
+      totalSales: sales.length,
+      totalRevenue,
+      averageSale: sales.length ? totalRevenue / sales.length : 0,
+      todaySales: todaySales.length,
+      thisWeekSales: weekSales.length,
+      thisWeekRevenue: weekRevenue
+    };
+  })
+);
+
 
     this.topProducts$ = this.salesService.getTopSellingProducts(5);
   }

@@ -40,8 +40,8 @@ import { SalesService } from '../../../services/sales.service';
               <mat-form-field class="full-width">
                 <mat-label>Select Product</mat-label>
                 <mat-select formControlName="productId" required (selectionChange)="onProductChange()">
-                  <mat-option *ngFor="let product of availableProducts$ | async" [value]="product.id">
-                    {{ product.name }} - Stock: {{ product.stock }} - \${{ product.price | number:'1.2-2' }}
+                  <mat-option *ngFor="let product of availableProducts$ | async" [value]="product._id">
+                    {{ product.productName }} - Stock: {{ product.stock }} - \${{ product.price | number:'1.2-2' }}
                   </mat-option>
                 </mat-select>
                 <mat-error *ngIf="salesForm.get('productId')?.hasError('required')">
@@ -52,7 +52,7 @@ import { SalesService } from '../../../services/sales.service';
 
             <div class="form-row" *ngIf="selectedProduct">
               <div class="product-info">
-                <h3>{{ selectedProduct.name }}</h3>
+                <h3>{{ selectedProduct.productName }}</h3>
                 <p><strong>Category:</strong> {{ selectedProduct.category }}</p>
                 <p><strong>Available Stock:</strong> {{ selectedProduct.stock }} units</p>
                 <p><strong>Unit Price:</strong> \${{ selectedProduct.price | number:'1.2-2' }}</p>

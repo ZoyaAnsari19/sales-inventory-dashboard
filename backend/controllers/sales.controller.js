@@ -42,7 +42,18 @@ exports.createSale = async (req, res) => {
     });
 
     await sale.save();
-    res.status(201).json(sale);
+    await Product.updateOne(
+      { _id: productId },
+      {
+        $inc: { 
+          salesCount: quantity,    // sales count increase
+          stock: -quantity         // stock decrease
+        },
+        $set: { updatedAt: new Date() }
+      }
+    );
+
+    res.status(201).json({ message: 'Sale created & product updated', sale });
   } catch (error) {
     res.status(500).json({ message: 'Failed to create sale', error });
   }
@@ -122,5 +133,37 @@ exports.getTopSellingProducts = async (req, res) => {
     res.json(topProducts);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch top-selling products', error });
+  }
+};
+
+// ✅ GET today's sales
+exports.getTodaySales = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // start of day
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1); // next day
+
+    const sales = await Sale.find({
+      saleDate: {
+        $gte: today,
+        $lt: tomorrow
+      }
+    }).populate('productId');
+
+    const formattedSales = sales.map(sale => ({
+      _id: sale._id,
+      productId: sale.productId?._id || null,
+      productName: sale.productId?.productName || 'Unknown',
+      quantity: sale.quantity || 0,
+      unitPrice: sale.unitPrice,
+      totalAmount: sale.totalAmount,
+      saleDate: sale.saleDate
+    }));
+
+    res.json(formattedSales);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch today\'s sales', error });
   }
 };

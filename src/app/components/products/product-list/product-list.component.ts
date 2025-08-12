@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Observable, of, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Product } from '../../../models/product.interface';
 import { ProductService } from '../../../services/product.service';
@@ -40,7 +40,7 @@ import { ExportService } from '../../../services/export.service';
         <div class="col-12 col-sm-6 col-md-4" *ngFor="let product of products$ | async">
           <div class="card shadow-sm h-100">
             <div class="card-body">
-              <h5 class="card-title">{{ product.name }}</h5>
+              <h5 class="card-title">{{ product.productName }}</h5>
               <h6 class="card-subtitle mb-2 text-muted">{{ product.category }}</h6>
               <p class="card-text">
                 <strong>Stock:</strong>
@@ -70,7 +70,7 @@ import { ExportService } from '../../../services/export.service';
   `]
 })
 export class ProductListComponent implements OnInit {
-  products$ = new BehaviorSubject<Product[]>([]);
+  products$; // declare only
   isSmallScreen = false;
 
   constructor(
@@ -80,56 +80,43 @@ export class ProductListComponent implements OnInit {
     private snackBar: MatSnackBar,
     private breakpointObserver: BreakpointObserver
   ) {
+    // initialize after productService is ready
+    this.products$ = this.productService.products$;
+
     this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
       this.isSmallScreen = result.matches;
     });
   }
 
   ngOnInit(): void {
-    this.loadProducts();
-  }
-
-  loadProducts(): void {
-    this.productService.getProducts().pipe(
-      catchError(() => {
-        this.snackBar.open('Error fetching products', 'Close', { duration: 3000 });
-        return of([]);
-      })
-    ).subscribe(products => {
-      this.products$.next(products || []);
-    });
+    this.productService.loadProducts();
   }
 
   deleteProduct(product: Product): void {
-    if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      this.productService.deleteProduct(product._id!).subscribe({
-        next: () => {
-          this.snackBar.open('Product deleted successfully', 'Close', {
-            duration: 3000
-          });
-          this.loadProducts();
-        },
-        error: () => {
-          this.snackBar.open('Error deleting product', 'Close', {
-            duration: 3000
-          });
-        }
-      });
-    }
-  }
+    if (!confirm(`Are you sure you want to delete "${product.productName}"?`)) return;
 
-  exportProducts(): void {
-    this.products$.subscribe(products => {
-      if (products.length > 0) {
-        this.exportService.exportProductsToCSV(products);
-        this.snackBar.open('Products exported successfully', 'Close', {
-          duration: 3000
-        });
-      } else {
-        this.snackBar.open('No products to export', 'Close', {
-          duration: 3000
-        });
+    this.productService.deleteProduct(product._id!).subscribe({
+      next: () => {
+        this.snackBar.open('Product deleted successfully', 'Close', { duration: 3000 });
+      },
+      error: () => {
+        this.snackBar.open('Error deleting product', 'Close', { duration: 3000 });
       }
     });
+  }
+
+  async exportProducts(): Promise<void> {
+    try {
+      const products = await firstValueFrom(this.productService.products$);
+      if (!products || products.length === 0) {
+        this.snackBar.open('No products to export', 'Close', { duration: 3000 });
+        return;
+      }
+      this.exportService.exportProductsToCSV(products);
+      this.snackBar.open('Products exported successfully', 'Close', { duration: 3000 });
+    } catch (err) {
+      console.error('Export error', err);
+      this.snackBar.open('Error exporting products', 'Close', { duration: 3000 });
+    }
   }
 }
