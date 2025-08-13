@@ -1,0 +1,27 @@
+services:
+  # Backend Service
+  - type: web
+    name: sales-inventory-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false  # Set this manually in Render dashboard
+
+  # Frontend Service
+  - type: web
+    name: sales-inventory-frontend
+    env: static
+    plan: free
+    buildCommand: npm run build
+    staticPublishPath: ./dist/sales-inventory-dashboard
+    envVars:
+      - key: NODE_ENV
+        value: production
