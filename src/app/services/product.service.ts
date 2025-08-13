@@ -97,12 +97,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, switchMap, map, tap, catchError } from 'rxjs';
 import { Product } from '../models/product.interface';
+import { environment } from '../../environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private baseUrl = 'http://localhost:5000/api/products';
+  private baseUrl = `${environment.apiUrl}/products`;
 
   // Keep BehaviorSubject so components can get latest value quickly
   private productsSubject = new BehaviorSubject<Product[]>([]);
