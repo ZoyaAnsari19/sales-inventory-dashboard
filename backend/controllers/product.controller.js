@@ -41,18 +41,28 @@ function normalizeBody(body) {
 exports.createProduct = async (req, res) => {
   try {
     const safeBody = normalizeBody({ ...req.body });
+    
+    // Validate required fields
+    if (!safeBody.productName || safeBody.productName.trim() === '') {
+      return res.status(400).json({ 
+        message: 'Product name is required',
+        error: 'productName is required'
+      });
+    }
+
     const product = new Product({
-      productName: safeBody.productName,
-      description: safeBody.description,
-      category: safeBody.category,
-      stock: safeBody.stock,
-      price: safeBody.price
+      productName: safeBody.productName.trim(),
+      description: safeBody.description || '',
+      category: safeBody.category || '',
+      stock: safeBody.stock || 0,
+      price: safeBody.price || 0
     });
+    
     await product.save();
     res.status(201).json(product);
   } catch (error) {
     console.error('Create product error:', error);
-    res.status(500).json({ message: 'Error creating product', error });
+    res.status(500).json({ message: 'Error creating product', error: error.message });
   }
 };
 

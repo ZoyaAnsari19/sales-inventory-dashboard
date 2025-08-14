@@ -24,8 +24,12 @@ import { MatButtonModule } from '@angular/material/button';
       <h5 class="mb-3">{{ isEditMode ? '✏️ Edit Product' : '➕ Add Product' }}</h5>
       <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
         <div class="mb-3">
-          <label>Name</label>
-          <input class="form-control" formControlName="name" />
+          <label>Product Name</label>
+          <input class="form-control" formControlName="productName" />
+        </div>
+        <div class="mb-3">
+          <label>Description</label>
+          <textarea class="form-control" formControlName="description" rows="3"></textarea>
         </div>
         <div class="mb-3">
           <label>Category</label>
@@ -63,7 +67,8 @@ export class ProductFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.productForm = this.fb.group({
-      name: ['', Validators.required],
+      productName: ['', Validators.required],
+      description: [''],
       category: ['', Validators.required],
       stock: [0, [Validators.required, Validators.min(0)]],
       price: [0, [Validators.required, Validators.min(0)]]
