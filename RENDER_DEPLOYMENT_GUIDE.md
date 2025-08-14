@@ -1,118 +1,81 @@
-# 🚀 Render Deployment Guide for f-dev Branch
+# Render Deployment Guide
 
 ## Prerequisites
-- MongoDB Atlas account
-- Render.com account
-- GitHub repository connected
+1. MongoDB Atlas account (for database)
+2. Render account
+3. GitHub repository with your code
 
-## Step 1: MongoDB Atlas Setup
+## Step 1: Set up MongoDB Atlas
+1. Go to [MongoDB Atlas](https://www.mongodb.com/atlas)
+2. Create a free cluster
+3. Get your connection string
+4. Replace `<password>` with your actual password
 
-1. **Create MongoDB Atlas Account:**
-   - Go to [MongoDB Atlas](https://www.mongodb.com/atlas)
-   - Sign up for free account
-   - Create new cluster (M0 Free tier)
+## Step 2: Deploy to Render
 
-2. **Get Connection String:**
-   - Click "Connect" on your cluster
-   - Choose "Connect your application"
-   - Copy the connection string
-   - Replace `<password>` with your database password
-   - Add database name: `sales-inventory`
+### Option A: Using render.yaml (Recommended)
+1. Push your code to GitHub
+2. Go to [Render Dashboard](https://dashboard.render.com)
+3. Click "New" → "Blueprint"
+4. Connect your GitHub repository
+5. Render will automatically detect the `render.yaml` file
+6. Set the `MONGODB_URI` environment variable in the backend service
 
-## Step 2: Backend Deployment
+### Option B: Manual Deployment
 
-1. **Go to Render Dashboard:**
-   - Visit [render.com](https://render.com)
-   - Sign in to your account
+#### Backend Deployment:
+1. Go to Render Dashboard
+2. Click "New" → "Web Service"
+3. Connect your GitHub repository
+4. Configure:
+   - **Name**: `sales-inventory-backend`
+   - **Environment**: `Node`
+   - **Build Command**: `cd backend && npm install`
+   - **Start Command**: `cd backend && npm start`
+   - **Root Directory**: Leave empty (will use root)
 
-2. **Create Web Service:**
-   - Click "New +" → "Web Service"
-   - Connect your GitHub repository: `ZoyaAnsari19/sales-inventory-dashboard`
-   - **Important:** Select branch `f-dev`
+5. Add Environment Variables:
+   - `NODE_ENV`: `production`
+   - `PORT`: `3000`
+   - `MONGODB_URI`: Your MongoDB Atlas connection string
 
-3. **Service Configuration:**
-   - **Name:** `sales-inventory-backend`
-   - **Environment:** Node
-   - **Build Command:** `cd backend && npm install`
-   - **Start Command:** `cd backend && node server.js`
-   - **Root Directory:** `backend`
+#### Frontend Deployment:
+1. Go to Render Dashboard
+2. Click "New" → "Static Site"
+3. Connect your GitHub repository
+4. Configure:
+   - **Name**: `sales-inventory-frontend`
+   - **Build Command**: `npm install && npm run build`
+   - **Publish Directory**: `dist/sales-inventory-dashboard/browser`
 
-4. **Environment Variables:**
-   ```
-   MONGO_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/sales-inventory
-   PORT=10000
-   NODE_ENV=production
-   ```
+5. Add Environment Variables:
+   - `API_URL`: `https://your-backend-service-name.onrender.com/api`
 
-5. **Deploy:**
-   - Click "Create Web Service"
-   - Wait for deployment to complete
-   - Note the URL: `https://sales-inventory-backend.onrender.com`
-
-## Step 3: Frontend Deployment
-
-1. **Create Static Site:**
-   - Click "New +" → "Static Site"
-   - Connect same GitHub repository: `ZoyaAnsari19/sales-inventory-dashboard`
-   - **Important:** Select branch `f-dev`
-
-2. **Site Configuration:**
-   - **Name:** `sales-inventory-frontend`
-   - **Build Command:** `npm run build`
-   - **Publish Directory:** `dist/sales-inventory-dashboard`
-
-3. **Deploy:**
-   - Click "Create Static Site"
-   - Wait for deployment to complete
-   - Note the URL: `https://sales-inventory-frontend.onrender.com`
-
-## Step 4: Update Frontend Environment
-
+## Step 3: Update Frontend API URL
 After backend deployment, update the frontend environment:
+1. Go to your frontend service in Render
+2. Add/Update environment variable:
+   - `API_URL`: `https://your-backend-service-name.onrender.com/api`
 
-1. **Edit:** `src/environment.prod.ts`
-2. **Update API URL:**
-   ```typescript
-   export const environment = {
-     production: true,
-     apiUrl: 'https://sales-inventory-backend.onrender.com/api'
-   };
-   ```
-3. **Commit and push changes:**
-   ```bash
-   git add .
-   git commit -m "Update production API URL"
-   git push origin f-dev
-   ```
-
-## Step 5: Testing
-
-1. **Test Backend API:**
-   ```bash
-   curl https://sales-inventory-backend.onrender.com
-   ```
-
-2. **Test Frontend:**
-   - Open `https://sales-inventory-frontend.onrender.com`
-   - Try adding a product
-   - Check if data saves to MongoDB
+## Step 4: Test Your Deployment
+1. Backend should be accessible at: `https://your-backend-service-name.onrender.com`
+2. Frontend should be accessible at: `https://your-frontend-service-name.onrender.com`
 
 ## Troubleshooting
+- Check Render logs for build errors
+- Ensure MongoDB connection string is correct
+- Verify all environment variables are set
+- Check CORS settings if frontend can't connect to backend
 
-### Common Issues:
+## Environment Variables Reference
+### Backend (.env)
+```
+NODE_ENV=production
+PORT=3000
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
+```
 
-1. **Build Failures:**
-   - Check Node.js version (should be 18+)
-   - Verify all dependencies in package.json
-
-2. **MongoDB Connection:**
-   - Ensure MongoDB Atlas network access allows `0.0.0.0/0`
-   - Verify connection string format
-
-3. **Environment Variables:**
-   - Double-check MONGO_URI format
-   - Ensure all required variables are set
-
-### Support:
-- Render Documentation: https://render.com/docs
-- MongoDB Atlas: https://docs.atlas.mongodb.com
+### Frontend
+```
+API_URL=https://your-backend-service-name.onrender.com/api
+```

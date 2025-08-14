@@ -1,79 +1,31 @@
-const https = require('https');
+#!/usr/bin/env node
+
 const fs = require('fs');
+const path = require('path');
 
-// Your Render token
-const RENDER_TOKEN = 'rnd_RDWdvLTBgNBnZSjKSz5XD77WQD9m';
+console.log('🚀 Sales Inventory Dashboard - Render Deployment Helper');
+console.log('=====================================================\n');
 
-// Function to make API request
-function makeRequest(url, method = 'GET', data = null) {
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname: 'api.render.com',
-      path: url,
-      method: method,
-      headers: {
-        'Authorization': `Bearer ${RENDER_TOKEN}`,
-        'Content-Type': 'application/json'
-      }
-    };
+console.log('📋 Pre-deployment Checklist:');
+console.log('1. ✅ MongoDB Atlas cluster created');
+console.log('2. ✅ MongoDB connection string ready');
+console.log('3. ✅ Code pushed to GitHub');
+console.log('4. ✅ Render account created\n');
 
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', (chunk) => body += chunk);
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(body));
-        } catch (e) {
-          resolve(body);
-        }
-      });
-    });
+console.log('🔧 Next Steps:');
+console.log('1. Go to https://dashboard.render.com');
+console.log('2. Click "New" → "Blueprint"');
+console.log('3. Connect your GitHub repository');
+console.log('4. Render will auto-detect render.yaml');
+console.log('5. Set MONGODB_URI environment variable\n');
 
-    req.on('error', reject);
+console.log('📁 Files created for deployment:');
+console.log('✅ render.yaml - Render configuration');
+console.log('✅ RENDER_DEPLOYMENT_GUIDE.md - Detailed guide');
+console.log('✅ backend/.env.example - Environment template\n');
 
-    if (data) {
-      req.write(JSON.stringify(data));
-    }
-    req.end();
-  });
-}
+console.log('🌐 After deployment:');
+console.log('- Backend: https://sales-inventory-backend.onrender.com');
+console.log('- Frontend: https://sales-inventory-frontend.onrender.com\n');
 
-// Deploy function
-async function deploy() {
-  try {
-    console.log('🚀 Starting deployment to Render...');
-    
-    // Get services list
-    console.log('📋 Getting services list...');
-    const services = await makeRequest('/v1/services');
-    console.log('Services found:', services.length);
-    
-    // Find backend service
-    const backendService = services.find(s => s.name === 'sales-inventory-backend');
-    if (backendService) {
-      console.log('🔧 Deploying backend...');
-      await makeRequest(`/v1/services/${backendService.id}/deploys`, 'POST');
-      console.log('✅ Backend deployment triggered');
-    } else {
-      console.log('❌ Backend service not found');
-    }
-    
-    // Find frontend service
-    const frontendService = services.find(s => s.name === 'sales-inventory-frontend');
-    if (frontendService) {
-      console.log('🎨 Deploying frontend...');
-      await makeRequest(`/v1/services/${frontendService.id}/deploys`, 'POST');
-      console.log('✅ Frontend deployment triggered');
-    } else {
-      console.log('❌ Frontend service not found');
-    }
-    
-    console.log('🎉 Deployment process completed!');
-    
-  } catch (error) {
-    console.error('❌ Deployment failed:', error.message);
-  }
-}
-
-// Run deployment
-deploy();
+console.log('📞 Need help? Check RENDER_DEPLOYMENT_GUIDE.md for detailed instructions!');

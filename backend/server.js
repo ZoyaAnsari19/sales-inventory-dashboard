@@ -7,7 +7,10 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['https://sales-inventory-dashboard-frontend.onrender.com', 'http://localhost:4200'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -25,7 +28,7 @@ app.get('/', (req, res) => {
 });
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
     app.listen(process.env.PORT || 5000, () => {

@@ -1,27 +1,26 @@
 services:
-  # Backend Service
+  # Backend API Service
   - type: web
     name: sales-inventory-backend
     env: node
     plan: free
     buildCommand: cd backend && npm install
-    startCommand: cd backend && node server.js
-    rootDir: backend
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
-      - key: MONGO_URI
-        sync: false  # Set this manually in Render dashboard
+        value: 3000
+      - key: MONGODB_URI
+        sync: false  # You'll need to set this in Render dashboard
 
   # Frontend Service
   - type: web
     name: sales-inventory-frontend
     env: static
     plan: free
-    buildCommand: npm run build
-    staticPublishPath: ./dist/sales-inventory-dashboard
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist/sales-inventory-dashboard/browser
     envVars:
-      - key: NODE_ENV
-        value: production
+      - key: API_URL
+        value: https://sales-inventory-backend.onrender.com/api
